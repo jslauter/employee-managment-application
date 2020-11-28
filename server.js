@@ -1,37 +1,35 @@
-const express = require("express")
-const dotenv = require('dotenv')
-const morgan = require('morgan')
-const app = express()
-const path = require('path')
+const express = require('express');
+const dotenv = require('dotenv');
+const morgan = require('morgan');
+const bodyparser = require("body-parser");
+const path = require('path');
 
-dotenv.config({
-  path: 'config.env'
-})
+const connectDB = require('./server/database/connection');
+
+const app = express();
+
+dotenv.config( { path : 'config.env'} )
 const PORT = process.env.PORT || 8080
 
-//log requests
-app.use(morgan('dev'))
+// log requests
+app.use(morgan('tiny'));
 
-//GET
-app.get("/", (req, res) => {
-  res.render("index.ejs")
-})
+// mongodb connection
+connectDB();
 
-//Parsing
-app.use(express.static("public"));
-app.use(express.urlencoded({
-  extended: true
-}));
-app.use(express.json());
+// parse request to body-parser
+app.use(bodyparser.urlencoded({ extended : true}))
 
-//set views engine
-app.set('view engine', 'ejs')
+// set view engine
+app.set("view engine", "ejs")
+//app.set("views", path.resolve(__dirname, "views/ejs"))
 
-//load assets
-app.use('/css', express.static(path.resolve(__dirname,'assets/css')))
-app.use('/img', express.static(path.resolve(__dirname,'assets/img')))
-app.use('/js', express.static(path.resolve(__dirname,'assets/js')))
+// load assets
+app.use('/css', express.static(path.resolve(__dirname, "assets/css")))
+app.use('/img', express.static(path.resolve(__dirname, "assets/img")))
+app.use('/js', express.static(path.resolve(__dirname, "assets/js")))
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-})
+// load routers
+app.use('/', require('./server/routes/router'))
+
+app.listen(PORT, ()=> { console.log(`Server is running on http://localhost:${PORT}`)});
